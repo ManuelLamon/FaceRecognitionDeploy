@@ -37,8 +37,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
+const https_1 = __importDefault(require("https"));
 const faceapi = __importStar(require("face-api.js"));
 const axios_1 = __importDefault(require("axios"));
+const fs_1 = __importDefault(require("fs"));
 const sharp_1 = __importDefault(require("sharp"));
 const GetKeyAuth_1 = require("./helpers/GetKeyAuth");
 const { loadImage, Canvas, Image, ImageData } = require("canvas");
@@ -47,6 +49,10 @@ const Headers_1 = __importDefault(require("./helpers/Headers"));
 const HttpService_1 = __importDefault(require("./helpers/HttpService"));
 const sendNotification_1 = require("./helpers/sendNotification");
 dotenv.config();
+const options = {
+    key: fs_1.default.readFileSync('/etc/letsencrypt/live/bankbot.zaccoapp.com/privkey.pem'),
+    cert: fs_1.default.readFileSync('/etc/letsencrypt/live/bankbot.zaccoapp.com/fullchain.pem')
+};
 let key = "";
 // patch nodejs environment, we need to provide an implementation of
 // HTMLCanvasElement and HTMLImageElement
@@ -106,7 +112,7 @@ app.use((req, res, next) => {
 app.use(express_1.default.json());
 app.use((0, cors_1.default)());
 app.use(router);
-app.listen(4055, () => __awaiter(void 0, void 0, void 0, function* () {
+https_1.default.createServer(options, app).listen(4055, () => __awaiter(void 0, void 0, void 0, function* () {
     key = yield (0, GetKeyAuth_1.GetTokenAPI)();
     yield faceapi.nets.ssdMobilenetv1.loadFromDisk("./static/models");
     yield faceapi.nets.tinyFaceDetector.loadFromDisk("./static/models");
@@ -114,6 +120,7 @@ app.listen(4055, () => __awaiter(void 0, void 0, void 0, function* () {
     yield faceapi.nets.faceRecognitionNet.loadFromDisk("./static/models");
     yield faceapi.nets.faceExpressionNet.loadFromDisk("./static/models");
     console.log("Listening on port 4055");
+    console.log('Servidor HTTPS escuchando en el puerto 4055');
 }));
 // Procesar una imagen para obtener su descriptor facial
 function processImage(imageURL) {
