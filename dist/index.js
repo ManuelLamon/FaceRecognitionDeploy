@@ -69,9 +69,12 @@ router.post("/FaceRecgnition", function (req, res) {
                 }
                 return false;
             });
+            console.log(ValidateDiference);
             for (const validate of ValidateDiference) {
                 if (!validate) {
-                    (0, sendNotification_1.sendNotification)("Validación de Identidad", "Tu Validación de indentidad fue denegada porque una de tus fotos no eres tu.", deviceId);
+                    (0, sendNotification_1.sendNotification)("Validación de Identidad", "Tu Validación de indentidad fue denegada porque una de tus fotos no eres tu.", deviceId, {
+                        code: "97",
+                    });
                     return;
                 }
                 ;
@@ -79,9 +82,12 @@ router.post("/FaceRecgnition", function (req, res) {
             const host = process.env.APP_BASE_API;
             const url = `/api/customers/verified/${customerId}`;
             const header = yield (0, Headers_1.default)(key, "application/json");
-            console.log(url);
-            const response = yield (0, HttpService_1.default)("get", host, url, {}, header);
-            (0, sendNotification_1.sendNotification)("Validación de Identidad", "Tu Validación de indentidad fue completada con exito!.", deviceId);
+            console.log(host + url);
+            const res = yield (0, HttpService_1.default)("get", host, url, {}, header);
+            console.log(res);
+            (0, sendNotification_1.sendNotification)("Validación de Identidad", "Tu Validación de indentidad fue completada con exito!.", deviceId, {
+                code: "98",
+            });
             return;
         }
         catch (error) {
@@ -140,6 +146,6 @@ function validateDiference(image1, image2) {
     // Using Euclidean distance to comapare face descriptions
     const distance = faceapi.euclideanDistance(image1.descriptor, image2.descriptor);
     console.log(100 - 100 * (-1 * (distance - 1)));
-    const dataNumber = 100 - 100 * (-1 * (distance - 1));
-    return dataNumber < 60;
+    const dataNumber = (distance * 100 - 100) * -1;
+    return dataNumber > 25;
 }

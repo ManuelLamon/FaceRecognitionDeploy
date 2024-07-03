@@ -14,22 +14,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendNotification = void 0;
 const axios_1 = __importDefault(require("axios"));
-const sendNotification = (title, body, deviceId) => __awaiter(void 0, void 0, void 0, function* () {
+const sendNotification = (title, body, deviceId, data) => __awaiter(void 0, void 0, void 0, function* () {
     const fcmUrl = 'https://fcm.googleapis.com/fcm/send';
     const serverKey = process.env.FCM_TOKEN; // Reemplaza con tu clave del servidor FCM
     const notification = {
         title,
         body,
     };
-    const data = {
+    const req = {
         to: deviceId, // Reemplaza con el token del dispositivo
         notification: notification,
-        data: {
-        // Datos adicionales que desees enviar
-        }
+        data: data
     };
     try {
-        const response = yield axios_1.default.post(fcmUrl, data, {
+        const response = yield axios_1.default.post(fcmUrl, req, {
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `key=${serverKey}`
