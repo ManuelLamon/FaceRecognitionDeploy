@@ -73,7 +73,7 @@ router.post("/FaceRecgnition", function (req, res) {
                 if (e && ImagePrincipal) {
                     return validateDiference(ImagePrincipal, e);
                 }
-                return true;
+                return false;
             });
             console.log(ValidateDiference);
             for (const validate of ValidateDiference) {
