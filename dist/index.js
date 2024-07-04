@@ -70,7 +70,10 @@ router.post("/FaceRecgnition", function (req, res) {
             const ImagePrincipal = yield processImage(imagePrincipalToValidate.urlResource);
             const ImagesCustomer = yield Promise.all(customerImages.map((e) => processImage(e.link)));
             const ValidateDiference = ImagesCustomer.map((e) => {
-                return validateDiference(ImagePrincipal, e);
+                if (e && ImagePrincipal) {
+                    return validateDiference(ImagePrincipal, e);
+                }
+                return true;
             });
             console.log(ValidateDiference);
             for (const validate of ValidateDiference) {
@@ -138,6 +141,7 @@ function processImage(imageURL) {
                 return idCardFacedetection;
             }
             else {
+                console.log("No tiene cara")
                 return false;
             }
         }
