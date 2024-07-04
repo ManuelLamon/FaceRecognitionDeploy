@@ -156,5 +156,5 @@ function validateDiference(image1, image2) {
     const dataNumber = (distance * 100 - 100) * -1;
     console.log(dataNumber);
     console.log(dataNumber > 25);
-    return dataNumber > 25;
+    return dataNumber > 30;
 }
