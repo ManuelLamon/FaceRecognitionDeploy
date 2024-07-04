@@ -152,7 +152,7 @@ function processImage(imageURL) {
 function validateDiference(image1, image2) {
     // Using Euclidean distance to comapare face descriptions
     const distance = faceapi.euclideanDistance(image1.descriptor, image2.descriptor);
-    console.log(100 - 100 * (-1 * (distance - 1)));
+    console.log((distance * 100 - 100) * -1);
     const dataNumber = (distance * 100 - 100) * -1;
     return dataNumber > 25;
 }
