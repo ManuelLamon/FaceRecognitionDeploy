@@ -70,10 +70,7 @@ router.post("/FaceRecgnition", function (req, res) {
             const ImagePrincipal = yield processImage(imagePrincipalToValidate.urlResource);
             const ImagesCustomer = yield Promise.all(customerImages.map((e) => processImage(e.link)));
             const ValidateDiference = ImagesCustomer.map((e) => {
-                if (e && ImagePrincipal) {
-                    return validateDiference(ImagePrincipal, e);
-                }
-                return false;
+                return validateDiference(ImagePrincipal, e);
             });
             console.log(ValidateDiference);
             for (const validate of ValidateDiference) {
