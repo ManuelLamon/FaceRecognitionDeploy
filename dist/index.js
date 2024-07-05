@@ -50,8 +50,8 @@ const HttpService_1 = __importDefault(require("./helpers/HttpService"));
 const sendNotification_1 = require("./helpers/sendNotification");
 dotenv.config();
 const options = {
-    key: fs_1.default.readFileSync('/etc/letsencrypt/live/bankbot.zaccoapp.com/privkey.pem'),
-    cert: fs_1.default.readFileSync('/etc/letsencrypt/live/bankbot.zaccoapp.com/fullchain.pem')
+    key: fs_1.default.readFileSync("/etc/letsencrypt/live/bankbot.zaccoapp.com/privkey.pem"),
+    cert: fs_1.default.readFileSync("/etc/letsencrypt/live/bankbot.zaccoapp.com/fullchain.pem"),
 };
 let key = "";
 // patch nodejs environment, we need to provide an implementation of
@@ -64,6 +64,7 @@ router.get("/", function (req, res) {
 });
 router.post("/FaceRecgnition", function (req, res) {
     return __awaiter(this, void 0, void 0, function* () {
+        let imgDenegadas = [];
         const { customerId, customerImages, imagePrincipalToValidate, deviceId } = req.body;
         res.json({ message: "File uploaded successfully" });
         try {
@@ -76,21 +77,31 @@ router.post("/FaceRecgnition", function (req, res) {
                 return false;
             });
             console.log(ValidateDiference);
-            for (const validate of ValidateDiference) {
+            for (const [index, validate] of ValidateDiference.entries()) {
                 if (!validate) {
-                    (0, sendNotification_1.sendNotification)("Validación de Identidad", "Tu Validación de indentidad fue denegada porque una de tus fotos no eres tu.", deviceId, {
-                        code: "97",
-                    });
-                    return;
+                    imgDenegadas.push(customerImages[index]);
+                    /* sendNotification(
+                      "Validación de Identidad",
+                      "Tu Validación de indentidad fue denegada porque una de tus fotos no eres tu.",
+                      deviceId,
+                      {
+                        code:"97",
+                      }
+                    ); */
                 }
-                ;
+            }
+            if (imgDenegadas.length) {
+                (0, sendNotification_1.sendNotification)("Validación de Identidad", "Tu Validación de indentidad fue denegada porque una de tus fotos no eres tu.", deviceId, {
+                    code: "97",
+                    customerImages: imgDenegadas,
+                });
+                return;
             }
             const host = process.env.APP_BASE_API;
             const url = `/api/customers/verified/${customerId}`;
             const header = yield (0, Headers_1.default)(key, "application/json");
             console.log(host + url);
             const res = yield (0, HttpService_1.default)("get", host, url, {}, header);
-            console.log(res);
             (0, sendNotification_1.sendNotification)("Validación de Identidad", "Tu Validación de indentidad fue completada con exito!.", deviceId, {
                 code: "98",
             });
@@ -120,7 +131,7 @@ https_1.default.createServer(options, app).listen(4055, () => __awaiter(void 0, 
     yield faceapi.nets.faceRecognitionNet.loadFromDisk("./static/models");
     yield faceapi.nets.faceExpressionNet.loadFromDisk("./static/models");
     console.log("Listening on port 4055");
-    console.log('Servidor HTTPS escuchando en el puerto 4055');
+    console.log("Servidor HTTPS escuchando en el puerto 4055");
 }));
 // Procesar una imagen para obtener su descriptor facial
 function processImage(imageURL) {
@@ -141,7 +152,6 @@ function processImage(imageURL) {
                 return idCardFacedetection;
             }
             else {
-                console.log("No tiene cara")
                 return false;
             }
         }
@@ -153,8 +163,7 @@ function processImage(imageURL) {
 function validateDiference(image1, image2) {
     // Using Euclidean distance to comapare face descriptions
     const distance = faceapi.euclideanDistance(image1.descriptor, image2.descriptor);
+    console.log((distance * 100 - 100) * -1);
     const dataNumber = (distance * 100 - 100) * -1;
-    console.log(dataNumber);
-    console.log(dataNumber > 25);
     return dataNumber > 40;
 }
