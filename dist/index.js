@@ -38,6 +38,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const https_1 = __importDefault(require("https"));
+const multer_1 = __importDefault(require("multer"));
 const faceapi = __importStar(require("face-api.js"));
 const axios_1 = __importDefault(require("axios"));
 const fs_1 = __importDefault(require("fs"));
@@ -50,6 +51,8 @@ const HttpService_1 = __importDefault(require("./helpers/HttpService"));
 const sendNotification_1 = require("./helpers/sendNotification");
 const node_cron_1 = __importDefault(require("node-cron"));
 dotenv.config();
+const storage = multer_1.default.memoryStorage();
+const upload = (0, multer_1.default)({ storage: storage });
 const options = {
     key: fs_1.default.readFileSync("/etc/letsencrypt/live/bankbot.zaccoapp.com/privkey.pem"),
     cert: fs_1.default.readFileSync("/etc/letsencrypt/live/bankbot.zaccoapp.com/fullchain.pem"),
@@ -63,6 +66,26 @@ const router = express_1.default.Router();
 router.get("/", function (req, res) {
     res.send("All systems operational");
 });
+router.post('/ThereIsFace', upload.single('image'), (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (req.file) {
+        const imageBuffer = req.file.buffer;
+        const info = yield (0, sharp_1.default)(imageBuffer).toFormat("png").toBuffer();
+        const image1 = yield loadImage(info);
+        const idCardFacedetection = yield faceapi
+            .detectSingleFace(image1, new faceapi.TinyFaceDetectorOptions());
+        if (idCardFacedetection) {
+            res.json({ message: "File uploaded successfully", code: "00" });
+            return;
+        }
+        else {
+            res.json({ message: "Este archivo no posee rostro.", code: "01" });
+            return;
+        }
+    }
+    else {
+        res.status(400).send('No se ha recibido ninguna imagen');
+    }
+}));
 router.post("/FaceRecgnition", function (req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         let imgDenegadas = [];
