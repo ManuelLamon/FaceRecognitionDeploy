@@ -192,5 +192,5 @@ function validateDiference(image1, image2) {
     const distance = faceapi.euclideanDistance(image1.descriptor, image2.descriptor);
     console.log((distance * 100 - 100) * -1);
     const dataNumber = (distance * 100 - 100) * -1;
-    return dataNumber > 40;
+    return dataNumber > 30;
 }
