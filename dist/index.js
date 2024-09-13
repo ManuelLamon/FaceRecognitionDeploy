@@ -49,7 +49,6 @@ const dotenv = __importStar(require("dotenv"));
 const Headers_1 = __importDefault(require("./helpers/Headers"));
 const HttpService_1 = __importDefault(require("./helpers/HttpService"));
 const sendNotification_1 = require("./helpers/sendNotification");
-const node_cron_1 = __importDefault(require("node-cron"));
 dotenv.config();
 const storage = multer_1.default.memoryStorage();
 const upload = (0, multer_1.default)({ storage: storage });
@@ -63,6 +62,7 @@ let key = "";
 faceapi.env.monkeyPatch({ Canvas, Image, ImageData });
 const app = (0, express_1.default)();
 const router = express_1.default.Router();
+const port = process.env.PORT || 4055;
 router.get("/", function (req, res) {
     res.send("All systems operational");
 });
@@ -92,6 +92,7 @@ router.post("/FaceRecgnition", function (req, res) {
         const { customerId, customerImages, imagePrincipalToValidate, deviceId } = req.body;
         res.json({ message: "File uploaded successfully" });
         try {
+            key = yield (0, GetKeyAuth_1.GetTokenAPI)();
             const ImagePrincipal = yield processImage(imagePrincipalToValidate.urlResource);
             const ImagesCustomer = yield Promise.all(customerImages.map((e) => processImage(e.link)));
             const ValidateDiference = ImagesCustomer.map((e) => {
@@ -147,18 +148,18 @@ app.use((req, res, next) => {
 app.use(express_1.default.json());
 app.use((0, cors_1.default)());
 app.use(router);
-https_1.default.createServer(options, app).listen(4055, () => __awaiter(void 0, void 0, void 0, function* () {
-    key = yield (0, GetKeyAuth_1.GetTokenAPI)();
-    node_cron_1.default.schedule('0 */8 * * *', () => {
-        (0, GetKeyAuth_1.GetTokenAPI)();
-    });
+https_1.default.createServer(options, app).listen(port, () => __awaiter(void 0, void 0, void 0, function* () {
+    // key = await GetTokenAPI();
+    // cron.schedule('0 */3 * * *', () => {
+    //   GetTokenAPI();
+    // });
     yield faceapi.nets.ssdMobilenetv1.loadFromDisk("./static/models");
     yield faceapi.nets.tinyFaceDetector.loadFromDisk("./static/models");
     yield faceapi.nets.faceLandmark68Net.loadFromDisk("./static/models");
     yield faceapi.nets.faceRecognitionNet.loadFromDisk("./static/models");
     yield faceapi.nets.faceExpressionNet.loadFromDisk("./static/models");
-    console.log("Listening on port 4055");
-    console.log("Servidor HTTPS escuchando en el puerto 4055");
+    console.log(`Listening on port ${port}`);
+    console.log(`Servidor HTTPS escuchando en el puerto ${port}`);
 }));
 // Procesar una imagen para obtener su descriptor facial
 function processImage(imageURL) {
@@ -192,5 +193,5 @@ function validateDiference(image1, image2) {
     const distance = faceapi.euclideanDistance(image1.descriptor, image2.descriptor);
     console.log((distance * 100 - 100) * -1);
     const dataNumber = (distance * 100 - 100) * -1;
-    return dataNumber > 40;
+    return dataNumber > 35;
 }

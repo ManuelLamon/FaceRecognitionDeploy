@@ -14,29 +14,50 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendNotification = void 0;
 const axios_1 = __importDefault(require("axios"));
+const { GoogleAuth } = require("google-auth-library");
+const path = require("path");
+const SERVICE_ACCOUNT_PATH = path.join(__dirname, "chanceaappp-23758-bee0cafd0444.json");
+function getAccessToken() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const auth = new GoogleAuth({
+                keyFile: SERVICE_ACCOUNT_PATH,
+                scopes: ["https://www.googleapis.com/auth/cloud-platform"], // Cambia este scope según tu caso
+            });
+            const client = yield auth.getClient();
+            const token = yield client.getAccessToken();
+            return token;
+        }
+        catch (error) {
+            console.log(error);
+        }
+    });
+}
 const sendNotification = (title, body, deviceId, data) => __awaiter(void 0, void 0, void 0, function* () {
-    const fcmUrl = 'https://fcm.googleapis.com/fcm/send';
-    const serverKey = process.env.FCM_TOKEN; // Reemplaza con tu clave del servidor FCM
+    const fcmUrl = "https://fcm.googleapis.com/v1/projects/chanceaappp-23758/messages:send";
+    const token = yield getAccessToken();
     const notification = {
         title,
         body,
     };
     const req = {
-        to: deviceId, // Reemplaza con el token del dispositivo
-        notification: notification,
-        data: data
+        message: {
+            token: deviceId,
+            notification: notification,
+            data: data,
+        },
     };
     try {
         const response = yield axios_1.default.post(fcmUrl, req, {
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `key=${serverKey}`
-            }
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token.data.access_token.token}`,
+            },
         });
-        console.log('Notificación enviada:', response.data);
+        console.log("Notificación enviada:", response.data);
     }
     catch (error) {
-        console.error('Error al enviar la notificación:', error.response ? error.response.data : error.message);
+        console.error("Error al enviar la notificación:", error.response ? error.response.data : error.message);
     }
 });
 exports.sendNotification = sendNotification;
