@@ -40,6 +40,7 @@ const sendNotification = (title, body, deviceId, data) => __awaiter(void 0, void
         title,
         body,
     };
+    console.log(token, "token");
     const req = {
         message: {
             token: deviceId,
