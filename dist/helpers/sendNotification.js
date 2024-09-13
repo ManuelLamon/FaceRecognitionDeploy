@@ -40,7 +40,7 @@ const sendNotification = (title, body, deviceId, data) => __awaiter(void 0, void
         title,
         body,
     };
-    console.log(token, "token");
+    console.log(token.token, "token");
     const req = {
         message: {
             token: deviceId,
@@ -52,7 +52,7 @@ const sendNotification = (title, body, deviceId, data) => __awaiter(void 0, void
         const response = yield axios_1.default.post(fcmUrl, req, {
             headers: {
                 "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
+                Authorization: `Bearer ${token.token}`,
             },
         });
         console.log("Notificación enviada:", response.data);
