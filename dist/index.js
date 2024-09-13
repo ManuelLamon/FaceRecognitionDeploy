@@ -123,7 +123,7 @@ router.post("/FaceRecgnition", function (req, res) {
                 return;
             }
             const host = process.env.APP_BASE_API;
-            const url = `/api/customers/verified/${customerId}`;
+            const url = `/api/appchancea/customer-profiles/verified/${customerId}`;
             const header = yield (0, Headers_1.default)(key, "application/json");
             console.log(host + url);
             const res = yield (0, HttpService_1.default)("get", host, url, {}, header);
