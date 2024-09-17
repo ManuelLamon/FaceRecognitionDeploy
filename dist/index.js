@@ -116,7 +116,7 @@ router.post("/FaceRecgnition", function (req, res) {
                 }
             }
             if (imgDenegadas.length) {
-                (0, sendNotification_1.sendNotification)("Validación de Identidad", "Tu Validación de indentidad fue denegada porque una de tus fotos no eres tu.", deviceId, {
+                (0, sendNotification_1.sendNotification)("Validación de Identidad", "Tu Validación de identidad fue denegada porque una de tus fotos no eres tu.", deviceId, {
                     code: "97",
                     customerImages: imgDenegadas,
                 });
@@ -127,7 +127,7 @@ router.post("/FaceRecgnition", function (req, res) {
             const header = yield (0, Headers_1.default)(key, "application/json");
             console.log(host + url);
             const res = yield (0, HttpService_1.default)("get", host, url, {}, header);
-            (0, sendNotification_1.sendNotification)("Validación de Identidad", "Tu Validación de indentidad fue completada con exito!.", deviceId, {
+            (0, sendNotification_1.sendNotification)("Validación de Identidad", "Tu Validación de identidad fue completada con éxito!.", deviceId, {
                 code: "98",
             });
             return;
