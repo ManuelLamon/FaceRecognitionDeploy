@@ -118,7 +118,7 @@ router.post("/FaceRecgnition", function (req, res) {
             if (imgDenegadas.length) {
                 (0, sendNotification_1.sendNotification)("Validación de Identidad", "Tu Validación de identidad fue denegada porque una de tus fotos no eres tu.", deviceId, {
                     code: "97",
-                    customerImages: imgDenegadas,
+                    customerImages: JSON.stringify(imgDenegadas),
                 });
                 return;
             }
