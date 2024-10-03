@@ -18,7 +18,7 @@ const GetTokenAPI = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const username = "admin";
         const password = "admin";
-        const host = "https://bankbot.zaccoapp.com:3232";
+        const host = "https://qaapp.chanceaapp.com:3232";
         const url = "/api/authenticate";
         const req = { username, password };
         const response = yield (0, HttpService_1.default)("post", host, url, req);

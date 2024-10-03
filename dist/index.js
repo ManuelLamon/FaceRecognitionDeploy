@@ -53,8 +53,8 @@ dotenv.config();
 const storage = multer_1.default.memoryStorage();
 const upload = (0, multer_1.default)({ storage: storage });
 const options = {
-    key: fs_1.default.readFileSync("/etc/letsencrypt/live/bankbot.zaccoapp.com/privkey.pem"),
-    cert: fs_1.default.readFileSync("/etc/letsencrypt/live/bankbot.zaccoapp.com/fullchain.pem"),
+    key: fs_1.default.readFileSync("/etc/letsencrypt/live/qaapp.chanceaapp.com/privkey.pem"),
+    cert: fs_1.default.readFileSync("/etc/letsencrypt/live/qaapp.chanceaapp.com/fullchain.pem"),
 };
 let key = "";
 // patch nodejs environment, we need to provide an implementation of
