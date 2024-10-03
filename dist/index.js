@@ -93,7 +93,7 @@ router.post("/FaceRecgnition", function (req, res) {
         res.json({ message: "File uploaded successfully" });
         try {
             key = yield (0, GetKeyAuth_1.GetTokenAPI)();
-            console.log(imagePrincipalToValidate)
+            console.log(imagePrincipalToValidate,"imagePrincipalToValidate")
             const ImagePrincipal = yield processImage(imagePrincipalToValidate.urlResource);
             const ImagesCustomer = yield Promise.all(customerImages.map((e) => processImage(e.link)));
             const ValidateDiference = ImagesCustomer.map((e) => {
