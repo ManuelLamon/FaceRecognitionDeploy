@@ -49,12 +49,19 @@ const dotenv = __importStar(require("dotenv"));
 const Headers_1 = __importDefault(require("./helpers/Headers"));
 const HttpService_1 = __importDefault(require("./helpers/HttpService"));
 const sendNotification_1 = require("./helpers/sendNotification");
+const aws_sdk_1 = __importDefault(require("aws-sdk"));
 dotenv.config();
 const storage = multer_1.default.memoryStorage();
 const upload = (0, multer_1.default)({ storage: storage });
+// Configura las credenciales y la región de S3
+const s3 = new aws_sdk_1.default.S3({
+    accessKeyId: process.env.ACCESSKEYID, // Reemplaza con tu accessKeyId
+    secretAccessKey: process.env.SECRETACCESSKEY, // Reemplaza con tu secretAccessKey
+    region: process.env.REGION, // La región donde está tu bucket
+});
 const options = {
-    key: fs_1.default.readFileSync("/etc/letsencrypt/live/qaapp.chanceaapp.com/privkey.pem"),
-    cert: fs_1.default.readFileSync("/etc/letsencrypt/live/qaapp.chanceaapp.com/fullchain.pem"),
+    key: fs_1.default.readFileSync(`/etc/letsencrypt/live/${process.env.BASE_API}/privkey.pem`),
+    cert: fs_1.default.readFileSync(`/etc/letsencrypt/live/${process.env.BASE_API}/fullchain.pem`),
 };
 let key = "";
 // patch nodejs environment, we need to provide an implementation of
@@ -90,7 +97,6 @@ router.post("/FaceRecgnition", function (req, res) {
     return __awaiter(this, void 0, void 0, function* () {
         let imgDenegadas = [];
         const { customerId, customerImages, imagePrincipalToValidate, deviceId } = req.body;
-        console.log(customerId, customerImages, imagePrincipalToValidate, deviceId,"imagePrincipalToValidate")
         res.json({ message: "File uploaded successfully" });
         try {
             key = yield (0, GetKeyAuth_1.GetTokenAPI)();
@@ -106,14 +112,6 @@ router.post("/FaceRecgnition", function (req, res) {
             for (const [index, validate] of ValidateDiference.entries()) {
                 if (!validate) {
                     imgDenegadas.push(customerImages[index]);
-                    /* sendNotification(
-                      "Validación de Identidad",
-                      "Tu Validación de indentidad fue denegada porque una de tus fotos no eres tu.",
-                      deviceId,
-                      {
-                        code:"97",
-                      }
-                    ); */
                 }
             }
             if (imgDenegadas.length) {
@@ -124,7 +122,7 @@ router.post("/FaceRecgnition", function (req, res) {
                 return;
             }
             const host = process.env.APP_BASE_API;
-            const url = `/api/appchancea/customer-profiles/verified/${customerId}`;
+            const url = `/api/appchancea/customers/verified/${customerId}`;
             const header = yield (0, Headers_1.default)(key, "application/json");
             console.log(host + url);
             const res = yield (0, HttpService_1.default)("get", host, url, {}, header);
@@ -166,13 +164,26 @@ https_1.default.createServer(options, app).listen(port, () => __awaiter(void 0, 
 function processImage(imageURL) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            console.log(imageURL);
-            const response = yield (0, axios_1.default)(imageURL, {
-                responseType: "arraybuffer",
-            });
-            const buffer = Buffer.from(response.data, "binary");
-            const info = yield (0, sharp_1.default)(buffer).toFormat("png").toBuffer();
+            let buffer;
+            // Verifica si la imagen proviene de S3
+            if (imageURL.includes(process.env.BUCKETNAME + '.s3.amazonaws.com')) {
+                // Extrae el nombre del archivo de la URL
+                const fileName = imageURL.split('.com/')[1];
+                // Obtén la imagen desde S3
+                buffer = yield getImageFromS3(fileName);
+            }
+            else {
+                // Si no es de S3, usa axios para obtener la imagen
+                const response = yield (0, axios_1.default)(imageURL, {
+                    responseType: 'arraybuffer',
+                });
+                buffer = Buffer.from(response.data, 'binary');
+            }
+            // Procesa la imagen con sharp
+            const info = yield (0, sharp_1.default)(buffer).toFormat('png').toBuffer();
+            // Carga la imagen para detección facial
             const image1 = yield loadImage(info);
+            // Realiza la detección facial
             const idCardFacedetection = yield faceapi
                 .detectSingleFace(image1, new faceapi.TinyFaceDetectorOptions())
                 .withFaceLandmarks()
@@ -185,7 +196,7 @@ function processImage(imageURL) {
             }
         }
         catch (error) {
-            console.log(error);
+            console.error('Error procesando la imagen:', error);
         }
     });
 }
@@ -195,4 +206,20 @@ function validateDiference(image1, image2) {
     console.log((distance * 100 - 100) * -1);
     const dataNumber = (distance * 100 - 100) * -1;
     return dataNumber > 35;
+}
+function getImageFromS3(fileName) {
+    return __awaiter(this, void 0, void 0, function* () {
+        const params = {
+            Bucket: process.env.BUCKETNAME, // El nombre de tu bucket
+            Key: fileName, // El nombre del archivo en el bucket
+        };
+        try {
+            const data = yield s3.getObject(params).promise();
+            return data.Body; // Devuelve el buffer de la imagen
+        }
+        catch (error) {
+            console.error('Error al obtener la imagen de S3:', error);
+            throw error;
+        }
+    });
 }

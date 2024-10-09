@@ -16,9 +16,9 @@ exports.GetTokenAPI = void 0;
 const HttpService_1 = __importDefault(require("./HttpService"));
 const GetTokenAPI = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const username = "admin";
-        const password = "admin";
-        const host = "https://qaapp.chanceaapp.com:3232";
+        const username = process.env.USER;
+        const password = process.env.PASSWORD;
+        const host = process.env.APP_BASE_API;
         const url = "/api/authenticate";
         const req = { username, password };
         const response = yield (0, HttpService_1.default)("post", host, url, req);
