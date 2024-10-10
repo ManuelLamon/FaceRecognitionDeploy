@@ -218,6 +218,10 @@ function getImageFromS3(fileName) {
             return data.Body; // Devuelve el buffer de la imagen
         }
         catch (error) {
+            console.log(params);
+            if (error.code === 'NoSuchKey') {
+                console.error(`La clave especificada no existe: ${params.Key}`);
+            }
             console.error('Error al obtener la imagen de S3:', error);
             throw error;
         }

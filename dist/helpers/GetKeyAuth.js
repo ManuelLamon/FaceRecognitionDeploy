@@ -16,7 +16,7 @@ exports.GetTokenAPI = void 0;
 const HttpService_1 = __importDefault(require("./HttpService"));
 const GetTokenAPI = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const username = process.env.USER;
+        const username = process.env.USERBACK;
         const password = process.env.PASSWORD;
         const host = process.env.APP_BASE_API;
         const url = "/api/authenticate";
