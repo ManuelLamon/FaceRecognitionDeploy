@@ -211,7 +211,7 @@ function getImageFromS3(fileName) {
     return __awaiter(this, void 0, void 0, function* () {
         const params = {
             Bucket: process.env.BUCKETNAME, // El nombre de tu bucket
-            Key: fileName, // El nombre del archivo en el bucket
+            Key: fileName.replace("%20", " "), // El nombre del archivo en el bucket
         };
         try {
             const data = yield s3.getObject(params).promise();
